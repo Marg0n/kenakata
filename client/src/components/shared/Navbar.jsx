@@ -1,17 +1,24 @@
+import { Link } from "react-router-dom";
 import NavRight from "./NavRight";
+import logo from '/kenakata.gif';
+// import logo from '/kenakata_logo.png';
 
 
 const Navbar = () => {
 
     const lists = <>
-        <li><a>Item 1</a></li>        
-        <li><a>Item 3</a></li>
+        <li>
+            <Link>Item 1</Link>
+        </li>
+        <li>
+            <Link>Item 3</Link>
+        </li>
     </>
 
     return (
         <>
-            <div className="navbar bg-neutral text-neutral-content">
-                
+            <div className="navbar bg-transparent text-primary-content">
+
                 <div className="navbar-start">
                     <div className="dropdown">
                         <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
@@ -34,18 +41,23 @@ const Navbar = () => {
                             {lists}
                         </ul>
                     </div>
+
                     {/* logo */}
-                    <a className="btn btn-ghost text-xl">কেনাকাটা</a>
+                    <Link to="/" className='flex gap-2 items-center btn btn-ghost text-xl'>
+                        <img className='w-10 h-10 rounded'
+                            referrerPolicy='no-referrer' src={logo} alt='কেনাকাটা' />
+                        <span className='font-bold'>কেনাকাটা</span>
+                    </Link>
                 </div>
 
                 <div className="navbar-center hidden lg:flex">
                     <ul className="menu menu-horizontal px-1">
-                       {lists}
+                        {lists}
                     </ul>
                 </div>
 
                 <div className="navbar-end">
-                    <NavRight/>
+                    <NavRight />
                 </div>
             </div>
         </>

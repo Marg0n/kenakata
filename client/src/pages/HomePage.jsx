@@ -1,10 +1,12 @@
-import Navbar from '../components/Navbar';
+import DisplayProducts from '../components/home/DisplayProducts';
+import Navbar from '../components/shared/Navbar';
 
 
 const HomePage = () => {
     return (
         <div>
             <Navbar/>
+            <DisplayProducts/>
         </div>
     );
 };
