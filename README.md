@@ -1,4 +1,4 @@
-# kenakata
+# kenakata ( কেনাকাটা )
 
 ### Overview: 
 A Fullstack functionality based Single page website where users can perform some search filtering functionalities. This project will focus on implementing pagination, searching, categorization and sorting of products.

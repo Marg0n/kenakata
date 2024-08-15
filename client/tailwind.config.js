@@ -15,7 +15,7 @@ export default {
     require('daisyui'),
   ],
   daisyui: {
-    themes: ["emerald", "luxury", "light", "dark", "wireframe", "cupcake", "dim", "aqua", "night", "winter","valentine"],
+    themes: ["emerald", "luxury", "light", "dark", "wireframe", "cupcake", "dim", "aqua", "night", "winter","valentine", "pastel"],
   },
 }
 
