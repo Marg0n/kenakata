@@ -46,7 +46,7 @@ const ProductsCard = ({ product }) => {
                     <div className="card-actions justify-end">
                         <Link
                             to={`/productDetails/${_id}`}
-                            className="btn btn-primary animate-pulse hover:animate-none"
+                            className="btn btn-neutral animate-pulse hover:animate-none"
                         >
                             Details
                         </Link>
