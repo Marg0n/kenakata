@@ -52,7 +52,7 @@ const ErrorPage = () => {
                                     Go To Home
                                 </span>
                             </Link>
-                            {
+                            {/* {
                                 user && <Link
                                     to='/dashboard'
                                     className="relative inline-block px-4 py-2 font-medium group">
@@ -62,7 +62,7 @@ const ErrorPage = () => {
                                         Go To Dashboard
                                     </span>
                                 </Link>
-                            }
+                            } */}
 
                         </div>
                     </div>
