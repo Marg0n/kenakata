@@ -34,12 +34,15 @@ const DisplayProducts = () => {
                 Total Item : {productData.length}
             </h3>
 
-            <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-8'>
-                {
-                    productData?.map( product => {
-                        return <ProductsCard key={product._id} product={product}/>
-                    })
-                }                
+            <div className="flex justify-center items-center">
+
+                <div className='grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-8'>
+                    {
+                        productData?.map(product => {
+                            return <ProductsCard key={product._id} product={product} />
+                        })
+                    }
+                </div>
             </div>
 
 

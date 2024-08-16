@@ -45,7 +45,7 @@ const ProductsCard = ({ product }) => {
                     </div>
                     <div className="card-actions justify-end">
                         <Link
-                            to={`/testDetails/${_id}`}
+                            to={`/productDetails/${_id}`}
                             className="btn btn-primary animate-pulse hover:animate-none"
                         >
                             Details
@@ -58,7 +58,7 @@ const ProductsCard = ({ product }) => {
 };
 
 ProductsCard.propTypes = {
-    product: PropTypes.array,
+    product: PropTypes.object,
 }
 
 
