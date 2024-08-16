@@ -8,8 +8,9 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //config
 require('dotenv').config();
 const app = express();
+
 // This is stripe test secret API key.
-const stripe = require("stripe")(process.env.STRIPE_API_KEY_SERVER);
+// const stripe = require("stripe")(process.env.STRIPE_API_KEY_SERVER);
 const port = process.env.PORT || 5000;
 
 
@@ -119,7 +120,7 @@ async function run() {
     // =================================
     // DB Collections' Connection
     // =================================
-    const usersCollection = client.db("lendenDB").collection("users");
+    const productsCollection = client.db("kenakataDB").collection("products");
 
 
 
@@ -134,6 +135,7 @@ async function run() {
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       const isAdmin = user?.isAdmin === true;
+
       if (!isAdmin) {
         return res.status(403).send({ message: "Unauthorized!!" });
       }
@@ -410,19 +412,6 @@ async function run() {
         return data
       })
 
-      // const chartDataStatus = bookingDetails.map( booking => {
-      //   const day = new Date(booking.appointmentsDate).getDate();
-      //   const month = new Date(booking.appointmentsDate).getMonth()+1;
-      //   const year = new Date(booking.appointmentsDate).getFullYear();
-      //   const date = day + "/" + month + "/" + year
-
-      //   const stat = [date, booking?.reportStatus]
-
-      //   return stat
-      // })    
-
-      // adding date and sale to charts' 0 index
-      // chartData.splice(0,0,['Date', 'Sales'])
       chartData.unshift(['Date', 'Sales'])
       // chartDataStatus.unshift(['Date', 'Status'])
 
@@ -569,12 +558,12 @@ async function run() {
 
 
     // =================================
-    // API Connections for banners
+    // API Connections for products
     // =================================
 
-    // Get banners' data i
-    app.get('/allBanners', async (req, res) => {
-      const results = await bannersCollection.find().toArray();
+    // Get products' data i
+    app.get('/products', async (req, res) => {
+      const results = await productsCollection.find().toArray();
       res.send(results);
     });
 
@@ -583,6 +572,7 @@ async function run() {
       const results = await bannersCollection.find({ isActive: true }).toArray();
       res.send(results);
     });
+    
     // Get banners' data is active false
     app.get('/bannersSlider', async (req, res) => {
       const results = await bannersCollection.find({ isActive: false }).toArray();
