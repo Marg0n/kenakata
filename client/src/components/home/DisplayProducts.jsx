@@ -17,14 +17,31 @@ const DisplayProducts = () => {
     const [currentPage, setCurrentPage] = useState(1); // default showing page is 1
     const [dataCount, setDataCount] = useState();
 
-    // search
+    // search by date
     const [searchTerm, setSearchTerm] = useState('')
 
     // filtering
-    const [filter, setFilter] = useState('');
+    const [filterDate, setFilterDate] = useState('');
 
-    const { data: productData = [], isLoading: productsLoading, refetch } = useQuery({
+    // category
+    const [filterCategory, setFilterCategory] = useState('');
+
+    // category
+    const [filterBrand, setFilterBrand] = useState('');
+
+    // for query product showing
+    const { data: productData = [], isLoading: productsLoading, refetch, isFetching } = useQuery({
         queryKey: ['productData'],
+        queryFn: async () => {
+            // const { data } = await axiosCommon(`/products?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}`)
+            const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}`)
+            return data
+        }
+    })
+
+    // for category, brand list
+    const { data: productDataCategory = [], isFetching: queryFetch} = useQuery({
+        queryKey: ['productDataCategory'],
         queryFn: async () => {
             const { data } = await axiosCommon(`/products`)
             return data
@@ -41,7 +58,7 @@ const DisplayProducts = () => {
     const handlePaginationButton = value => {
         setCurrentPage(value);
         // console.log(value);
-        { value === 24 && setItemsPerPage(Math.ceil(value / (Math.ceil(value / 6)))) }
+        // { value === 24 && setItemsPerPage(Math.ceil(value / (Math.ceil(value / 6)))) }
     }
     // console.log(typeof(currentPage) , currentPage)
 
@@ -54,34 +71,37 @@ const DisplayProducts = () => {
 
     const onSubmit = async (data) => {
 
-        const { name, date, category } = data;
+        const { name, date, category, brand } = data;
 
         const formattedDate = moment(date).format('YYYY-MM-DDTHH:mm:ss[Z]');
         console.log(formattedDate); // Output: 2024-08-15T20:24:22Z
 
-
-        setFilter(formattedDate)
+        setFilterDate(formattedDate)
         setSearchTerm(name)
-        // console.log(filter <= today ? 'choto' : 'boro')
-        console.log(category, name, date);
+        setFilterCategory(category)
+        setFilterBrand(brand)
+        // console.log(category, name, date,brand);
         refetch();
     }
 
     // reset
     const handleReset = () => {
-        setFilter('')
-        setSearchTerm('')
+        setFilterDate('');
+        setSearchTerm('');
+        setFilterCategory('');
+        setFilterBrand("");
         setCurrentPage(1);
         refetch();
         reset(); // Reset the form fields
+
         // Reload the page to clear the filters
-        // window.location.reload();
+        window.location.reload();
     }
 
-    refetch();
+    // refetch();
 
     // loader
-    if (productsLoading) {
+    if (productsLoading || isFetching || queryFetch) {
         <Loader />
     }
 
@@ -93,7 +113,7 @@ const DisplayProducts = () => {
             </Helmet>
 
             <h3 className="font-bold font-sans text-2xl text-center underline underline-offset-4">
-                Total Item : {productData.length}
+                Item Found : {productData.length}
             </h3>
 
             {/* filter */}
@@ -112,7 +132,6 @@ const DisplayProducts = () => {
                             id='date'
                             className='block p-4 w-full px-4 py-2  border rounded-lg input input-bordered focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
                             {...register("date")}
-                        // value={today}
                         />
                     </div>
 
@@ -132,10 +151,24 @@ const DisplayProducts = () => {
                         <select {...register("category")}
                             className='block p-4 w-full px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
                         >
-                            <option value="" >Select Category</option>
+                            <option value="" >Category</option>
                             {
-                                [...new Set(productData?.map(product => product.Category))].map((category, index) => {
+                                [...new Set(productDataCategory?.map(product => product.Category))].map((category, index) => {
                                     return <option key={index} value={category}>{category}</option>
+                                })
+                            }
+                        </select>
+                    </div>
+
+                    {/* brand */}
+                    <div>
+                        <select {...register("brand")}
+                            className='block p-4 w-full px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                        >
+                            <option value="" >Select Brand</option>
+                            {
+                                [...new Set(productDataCategory?.map(catg => catg.BrandName))].map((brand, index) => {
+                                    return <option key={index} value={brand}>{brand}</option>
                                 })
                             }
                         </select>

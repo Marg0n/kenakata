@@ -567,12 +567,51 @@ async function run() {
       res.send(results);
     });
 
+    // Get query products' data i
+    app.get('/queryProducts', async (req, res) => {
+      const size = parseInt(req.query.size)
+      const page = parseInt(req.query.page) - 1
+      const date = req.query?.date
+      const category = req.query?.category
+      const search = req.query?.search
+      const brand = req.query?.brand
+      console.log(size,page,date,category,search);
+
+      let query = {
+        // test_date: { $gte: today }, // Filter dates greater than or equal to today's date
+        // ProductName: { $regex: search, $options: 'i' },
+      }
+      if (search) {
+        query = { ...query, ProductName: { $regex: search, $options: 'i' } }; 
+      }
+      if (date !== 'Invalid date' || '') {
+        query = { ...query, AddedDateTime: { $gte: date } }; // Filter dates greater than or equal to the filter date
+      }
+      if (category) {
+        query = { ...query, Category:  { $eq: category } };
+      }
+      if (brand) {
+        query = { ...query, BrandName:  { $eq: brand } };
+      }
+
+      console.log(query);
+
+      const results = await productsCollection
+        .find(query)
+        .sort({ test_date: 1 }) // Sort by test_date in ascending order
+        .skip(page * size)
+        .limit(size)
+        .toArray();
+
+      res.send(results);
+    });
+
     // Get banners' data is active true
     app.get('/banners', async (req, res) => {
       const results = await bannersCollection.find({ isActive: true }).toArray();
       res.send(results);
     });
-    
+
     // Get banners' data is active false
     app.get('/bannersSlider', async (req, res) => {
       const results = await bannersCollection.find({ isActive: false }).toArray();
