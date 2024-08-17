@@ -26,21 +26,24 @@ const DisplayProducts = () => {
     // category
     const [filterCategory, setFilterCategory] = useState('');
 
-    // category
+    // brand
     const [filterBrand, setFilterBrand] = useState('');
+
+    // range of price
+    const [filterPrice, setFilterPrice] = useState(100);
 
     // for query product showing
     const { data: productData = [], isLoading: productsLoading, refetch, isFetching } = useQuery({
         queryKey: ['productData'],
         queryFn: async () => {
             // const { data } = await axiosCommon(`/products?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}`)
-            const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}`)
+            const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}`)
             return data
         }
     })
 
     // for category, brand list
-    const { data: productDataCategory = [], isFetching: queryFetch} = useQuery({
+    const { data: productDataCategory = [], isFetching: queryFetch } = useQuery({
         queryKey: ['productDataCategory'],
         queryFn: async () => {
             const { data } = await axiosCommon(`/products`)
@@ -71,16 +74,19 @@ const DisplayProducts = () => {
 
     const onSubmit = async (data) => {
 
-        const { name, date, category, brand } = data;
+        const { name, date, category, brand, range } = data;
 
         const formattedDate = moment(date).format('YYYY-MM-DDTHH:mm:ss[Z]');
-        console.log(formattedDate); // Output: 2024-08-15T20:24:22Z
+        // console.log(formattedDate); // Output: 2024-08-15T20:24:22Z
+
+        const intRange = parseFloat(range);
 
         setFilterDate(formattedDate)
         setSearchTerm(name)
         setFilterCategory(category)
         setFilterBrand(brand)
-        // console.log(category, name, date,brand);
+        setFilterPrice(intRange)
+        // console.log(category, name, date,brand, typeof(intRange),intRange);
         refetch();
     }
 
@@ -90,6 +96,7 @@ const DisplayProducts = () => {
         setSearchTerm('');
         setFilterCategory('');
         setFilterBrand("");
+        setFilterPrice(100);
         setCurrentPage(1);
         refetch();
         reset(); // Reset the form fields
@@ -98,7 +105,7 @@ const DisplayProducts = () => {
         window.location.reload();
     }
 
-    // refetch();
+    refetch();
 
     // loader
     if (productsLoading || isFetching || queryFetch) {
@@ -120,7 +127,7 @@ const DisplayProducts = () => {
             <div className='flex flex-col md:flex-row justify-center items-center gap-5 '>
 
                 <form
-                    className="flex gap-6"
+                    className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6"
                     onSubmit={handleSubmit(onSubmit)}
                 >
 
@@ -130,7 +137,7 @@ const DisplayProducts = () => {
                             type="datetime-local"
                             name='date'
                             id='date'
-                            className='block p-4 w-full px-4 py-2  border rounded-lg input input-bordered focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                            className='block p-4 w-auto px-4 py-2  border rounded-lg input input-bordered focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
                             {...register("date")}
                         />
                     </div>
@@ -149,7 +156,7 @@ const DisplayProducts = () => {
                     {/* category */}
                     <div>
                         <select {...register("category")}
-                            className='block p-4 w-full px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
                         >
                             <option value="" >Category</option>
                             {
@@ -163,7 +170,7 @@ const DisplayProducts = () => {
                     {/* brand */}
                     <div>
                         <select {...register("brand")}
-                            className='block p-4 w-full px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
                         >
                             <option value="" >Select Brand</option>
                             {
@@ -172,6 +179,26 @@ const DisplayProducts = () => {
                                 })
                             }
                         </select>
+                    </div>
+
+                    {/* range of price */}
+                    <div>
+                        <input
+                            name="range"
+                            type="range"
+                            min={0}
+                            max={100} // Set a fixed max value
+                            {...register('range')}
+                            className="range range-error"
+                            step="5"
+                        />
+                        <div className="flex w-full justify-between px-2 text-xs">
+                            <span>|</span>
+                            <span>|</span>
+                            <span>|</span>
+                            <span>|</span>
+                            <span>|</span>
+                        </div>
                     </div>
 
                     <button

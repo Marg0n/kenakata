@@ -9,8 +9,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 
-// This is stripe test secret API key.
-// const stripe = require("stripe")(process.env.STRIPE_API_KEY_SERVER);
+
 const port = process.env.PORT || 5000;
 
 
@@ -142,40 +141,6 @@ async function run() {
 
       next();
     }
-
-    // =================================
-    // Stripe payment connection
-    // =================================
-
-    app.post("/create-payment-intent", verifyToken, async (req, res) => {
-      const  {price} = req.body;
-      // console.log(price)
-      const amounts = parseFloat(price * 100)
-      // console.log(amounts)
-
-      // return if...
-      // if (amounts <= 0) return
-
-      // Create a PaymentIntent with the order amount and currency
-      const paymentIntent = await stripe.paymentIntents.create({
-        // amount: calculateOrderAmount(amounts),
-        amount: amounts,
-        currency: "usd",
-        payment_method_types: [
-          "card",
-        ],
-        // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default. it cannot be used with 'payment_method_types' parameter
-        // automatic_payment_methods: {
-        //   enabled: true,
-        // },
-      });
-
-      // console.log(paymentIntent)
-
-      res.send({
-        clientSecret: paymentIntent.client_secret,
-      });
-    });
 
 
     // =================================
@@ -364,197 +329,6 @@ async function run() {
       res.send(results);
     })
 
-    // Get tests details
-    app.get('/testsLists/:id', verifyToken, async (req, res) => {
-      const id = req.params?.id;
-      const results = await testsCollection.find({ _id: new ObjectId(id) }).toArray();
-      // console.log(results)
-      res.send(results);
-    })
-
-
-    // =================================
-    // API Connections for booking tests
-    // =================================
-
-    // get data for appointments
-    app.get('/appointment', verifyToken, verifyAdmin, async (req, res) => {
-      const results = await bookingsCollection.find().toArray();
-      res.send(results);
-    })
-
-    // get specific data for appointments for admin statistics 
-    app.get('/appointmentAdminStat', verifyToken, verifyAdmin, async (req, res) => {
-      const bookingDetails = await bookingsCollection.find(
-        {},
-        {
-          projection: {
-            testPrice: 1,
-            appointmentsDate: 1,
-            reportStatus: 1,
-          },
-        },
-      ).toArray();
-
-      const totalUsers = await usersCollection.countDocuments()
-      const totalBanners = await bannersCollection.countDocuments()
-      const totalTests = await testsCollection.countDocuments()
-      const totalPrice = bookingDetails.reduce((sum, booking) => sum + booking.testPrice, 0)
-
-      const chartData = bookingDetails.map(booking => {
-        const day = new Date(booking.appointmentsDate).getDate();
-        const month = new Date(booking.appointmentsDate).getMonth() + 1;
-        const year = new Date(booking.appointmentsDate).getFullYear();
-        const date = day + "/" + month + "/" + year
-
-        const data = [date, booking?.testPrice]
-
-        return data
-      })
-
-      chartData.unshift(['Date', 'Sales'])
-      // chartDataStatus.unshift(['Date', 'Status'])
-
-      const statusCounts = {};
-      bookingDetails.forEach(booking => {
-        const day = new Date(booking.appointmentsDate).getDate();
-        const month = new Date(booking.appointmentsDate).getMonth() + 1;
-        const year = new Date(booking.appointmentsDate).getFullYear();
-        const date = day + "/" + month + "/" + year;
-
-        if (!statusCounts[date]) {
-          statusCounts[date] = { pending: 0, delivered: 0, canceled: 0 };
-        }
-
-        statusCounts[date][booking.reportStatus]++;
-      });
-
-      const uniqueDates = Object.keys(statusCounts);
-      const chartData2 = [['Date', 'Pending', 'Delivered', 'Canceled']];
-
-      uniqueDates.forEach(date => {
-        const { pending, delivered, canceled } = statusCounts[date];
-        chartData2.push([date, pending, delivered, canceled]);
-      });
-
-      res.send({
-        totalUsers,
-        totalBanners,
-        totalTests,
-        totalBooking: bookingDetails.length,
-        totalPrice,
-        chartData,
-        chartData2
-        // chartDataStatus
-      });
-    })
-
-    // get data for appointments by mail Filter by appointmentsDate
-    app.get('/appointment/:email', verifyToken, async (req, res) => {
-      const mail = req.params?.email;
-      const currentDate = new Date().toISOString().split('T')[0]; // Get the current date in 'YYYY-MM-DD' format  
-
-      const query = {
-        userMail: mail,
-        appointmentsDate: { $gte: currentDate }, // Filter by appointmentsDate greater than or equal to the current date
-        reportStatus: { $ne: 'delivered' } // Exclude 'delivered' status
-      };
-
-      const results = await bookingsCollection.find(query).toArray();
-      // console.log(results)
-      res.send(results);
-    })
-
-    // get data for test results by mail
-    app.get('/appointmentResult/:email', verifyToken, async (req, res) => {
-      const mail = req.params?.email;
-
-      const query = { userMail: mail, reportStatus: { $eq: 'delivered' } };
-
-      const results = await bookingsCollection.find(query).toArray();
-      // console.log(results)
-      res.send(results);
-    })
-
-    // Patch a users' appointment Status by id
-    app.patch('/appointmentStatus/:id', verifyToken, async (req, res) => {
-      try {
-        const id = req.params?.id; // Extract the user id from the request parameters
-        const updateBody = req.body; // Extract the new status from the request body
-        // console.log('updateBody -->',updateBody);
-        const query = { _id: new ObjectId(id) }
-        const updateDoc = {
-          $set: {
-            reportStatus: updateBody.status,
-          },
-        }
-        const results = await bookingsCollection.updateOne(query, updateDoc);
-
-        // console.log(results)
-        res.send(results);
-      }
-      catch (err) {
-        // If an error occurs during execution, catch it here
-        console.error('Error updating user status:', err);
-        // Send an error response to the client
-        res.status(500).json({ message: 'Internal server error' });
-      }
-    });
-
-    // Post a booking
-    app.post('/userBookings', verifyToken, async (req, res) => {
-      const booking = req.body;
-      // console.log(booking);
-
-      // check if there is already a booking
-      const query = {
-        userMail: booking.userMail,
-        testID: booking.testID,
-        reportStatus: { $ne: 'canceled' },
-      }
-
-      const alreadyBooked = await bookingsCollection.findOne(query)
-
-      if (alreadyBooked) {
-        return res
-          .status(400)
-          .send("There is already a booking!")
-      }
-
-      const result = await bookingsCollection.insertOne(booking);
-      // console.log(result);
-
-      // update the test slots
-      const updateDoc = {
-        $inc: {
-          test_slots: -1,
-        },
-      }
-
-      const find = { _id: new ObjectId(booking.testID) }
-      const updateSlots = await testsCollection.updateOne(find, updateDoc)
-      // console.log(updateSlots)
-
-      res.send(result);
-    })
-
-    // total price regarding status
-    app.get('/appointments/totalPrice', verifyToken, async (req, res) => {
-      try {
-        const results = await bookingsCollection.aggregate([
-          { $group: { _id: null, totalPrice: { $sum: "$testPrice" } } }
-        ]).toArray();
-
-        // If there are no results, default to 0
-        const totalPrice = results.length > 0 ? results[0].totalPrice : 0;
-
-        res.send({ totalPrice });
-      } catch (err) {
-        console.error('Error calculating total price:', err);
-        res.status(500).json({ message: 'Internal server error' });
-      }
-    });
-
 
 
     // =================================
@@ -569,41 +343,51 @@ async function run() {
 
     // Get query products' data i
     app.get('/queryProducts', async (req, res) => {
-      const size = parseInt(req.query.size)
-      const page = parseInt(req.query.page) - 1
-      const date = req.query?.date
-      const category = req.query?.category
-      const search = req.query?.search
-      const brand = req.query?.brand
-      console.log(size,page,date,category,search);
+      try {
+        const size = parseInt(req.query.size)
+        const page = parseInt(req.query.page) - 1
+        const date = req.query?.date
+        const category = req.query?.category
+        const search = req.query?.search
+        const brand = req.query?.brand
+        const price = parseFloat(req.query?.price)
+        // console.log(size, page, date, category, search);
 
-      let query = {
-        // test_date: { $gte: today }, // Filter dates greater than or equal to today's date
-        // ProductName: { $regex: search, $options: 'i' },
-      }
-      if (search) {
-        query = { ...query, ProductName: { $regex: search, $options: 'i' } }; 
-      }
-      if (date !== 'Invalid date' || '') {
-        query = { ...query, AddedDateTime: { $gte: date } }; // Filter dates greater than or equal to the filter date
-      }
-      if (category) {
-        query = { ...query, Category:  { $eq: category } };
-      }
-      if (brand) {
-        query = { ...query, BrandName:  { $eq: brand } };
-      }
+        let query = {  };
 
-      console.log(query);
+        if (price) {
+          query = { ...query, Price: { $lte: price }  };
+        }
+        if (search) {
+          query = { ...query, ProductName: { $regex: search, $options: 'i' } };
+        }
+        if (date !== 'Invalid date' || '') {
+          query = { ...query, AddedDateTime: { $gte: date } }; // Filter dates greater than or equal to the filter date
+        }
+        if (category) {
+          query = { ...query, Category: { $eq: category } };
+        }
+        if (brand) {
+          query = { ...query, BrandName: { $eq: brand } };
+        }
 
-      const results = await productsCollection
-        .find(query)
-        .sort({ test_date: 1 }) // Sort by test_date in ascending order
-        .skip(page * size)
-        .limit(size)
-        .toArray();
+        // console.log(query);
 
-      res.send(results);
+        const results = await productsCollection
+          .find(query)
+          .sort({ test_date: 1 }) // Sort by test_date in ascending order
+          .skip(page * size)
+          .limit(size)
+          .toArray();
+
+        res.send(results);
+      }
+      catch (err) {
+        // If an error occurs during execution, catch it here
+        console.error('Error updating user status:', err);
+        // Send an error response to the client
+        res.status(500).json({ message: 'Internal server error' });
+      }
     });
 
     // Get banners' data is active true
