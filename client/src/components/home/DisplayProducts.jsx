@@ -32,12 +32,18 @@ const DisplayProducts = () => {
     // range of price
     const [filterPrice, setFilterPrice] = useState(100);
 
+    // sort date by
+    const [sortDate, setSortDate] = useState('asc');
+
+    // sort price by
+    const [sortPrice, setSortPrice] = useState('asc');
+
     // for query product showing
     const { data: productData = [], isLoading: productsLoading, refetch, isFetching } = useQuery({
         queryKey: ['productData'],
         queryFn: async () => {
             // const { data } = await axiosCommon(`/products?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}`)
-            const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}`)
+            const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
             return data
         }
     })
@@ -74,7 +80,7 @@ const DisplayProducts = () => {
 
     const onSubmit = async (data) => {
 
-        const { name, date, category, brand, range } = data;
+        const { name, date, category, brand, range, sortD, sortP } = data;
 
         const formattedDate = moment(date).format('YYYY-MM-DDTHH:mm:ss[Z]');
         // console.log(formattedDate); // Output: 2024-08-15T20:24:22Z
@@ -86,7 +92,10 @@ const DisplayProducts = () => {
         setFilterCategory(category)
         setFilterBrand(brand)
         setFilterPrice(intRange)
+        setSortDate(sortD)
+        setSortPrice(sortP)
         // console.log(category, name, date,brand, typeof(intRange),intRange);
+        console.log(sortD, sortP)
         refetch();
     }
 
@@ -97,6 +106,8 @@ const DisplayProducts = () => {
         setFilterCategory('');
         setFilterBrand("");
         setFilterPrice(100);
+        setSortPrice('asc');
+        setSortDate('asc');
         setCurrentPage(1);
         refetch();
         reset(); // Reset the form fields
@@ -151,6 +162,25 @@ const DisplayProducts = () => {
                                 {...register("name")}
                             />
                         </label>
+                    </div>
+
+                    {/* sort by date */}
+                    <div>
+                        <select {...register("sortD")}
+                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                        >
+                            <option value="asc" >Ascending Date</option>
+                            <option value="dsc" >Descending Date</option>
+                        </select>
+                    </div>
+                    {/* sort by price */}
+                    <div>
+                        <select {...register("sortP")}
+                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                        >
+                            <option value="asc" >Ascending Price</option>
+                            <option value="dsc" >Descending Price</option>
+                        </select>
                     </div>
 
                     {/* category */}

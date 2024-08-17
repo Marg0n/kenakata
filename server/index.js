@@ -351,12 +351,14 @@ async function run() {
         const search = req.query?.search
         const brand = req.query?.brand
         const price = parseFloat(req.query?.price)
+        const sortDate = req.query?.sortDate
+        const sortPrice = req.query?.sortPrice
         // console.log(size, page, date, category, search);
 
-        let query = {  };
+        let query = {};
 
         if (price) {
-          query = { ...query, Price: { $lte: price }  };
+          query = { ...query, Price: { $lte: price } };
         }
         if (search) {
           query = { ...query, ProductName: { $regex: search, $options: 'i' } };
@@ -372,10 +374,17 @@ async function run() {
         }
 
         // console.log(query);
+        let sortingDates = 1;
+        let sortingPrice = 1;
+        if (sortDate === 'dsc') { sortingDates = -1 }
+
+        if (sortPrice === 'dsc') {  sortingPrice = -1 }
+
+        // console.log(sortingDates, sortingPrice)
 
         const results = await productsCollection
           .find(query)
-          .sort({ test_date: 1 }) // Sort by test_date in ascending order
+          .sort({ Price: sortingPrice, AddedDateTime: sortingDates }) // Sort by in ascending or descending order
           .skip(page * size)
           .limit(size)
           .toArray();

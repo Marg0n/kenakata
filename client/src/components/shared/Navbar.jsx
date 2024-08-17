@@ -7,10 +7,10 @@ const Navbar = () => {
 
     const lists = <>
         <li>
-            <Link>Item 1</Link>
+            <Link>Link 1</Link>
         </li>
         <li>
-            <Link>Item 3</Link>
+            <Link>Link 3</Link>
         </li>
     </>
 
