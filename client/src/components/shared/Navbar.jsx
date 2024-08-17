@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import NavRight from "./NavRight";
 import logo from '/kenakata.gif';
-// import logo from '/kenakata_logo.png';
 
 
 const Navbar = () => {
