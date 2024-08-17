@@ -363,8 +363,8 @@ async function run() {
         if (search) {
           query = { ...query, ProductName: { $regex: search, $options: 'i' } };
         }
-        if (date !== 'Invalid date' || '') {
-          query = { ...query, AddedDateTime: { $gte: date } }; // Filter dates greater than or equal to the filter date
+        if (date !== 'Invalid date') {
+          query = { ...query, AddedDateTime: { $gte: date } }; 
         }
         if (category) {
           query = { ...query, Category: { $eq: category } };
@@ -374,17 +374,28 @@ async function run() {
         }
 
         // console.log(query);
-        let sortingDates = 1;
-        let sortingPrice = 1;
-        if (sortDate === 'dsc') { sortingDates = -1 }
+        // let sortingDates = 1;
+        // let sortingPrice = 1;
+        // if (sortDate === 'dsc') { sortingDates = -1 }
 
-        if (sortPrice === 'dsc') {  sortingPrice = -1 }
+        // if (sortPrice === 'dsc') {  sortingPrice = -1 }
+
+         // Set sorting order
+        //  let sortOptions = {};
+        //  if (sortDate) {
+        //      sortOptions.AddedDateTime = sortDate === 'dsc' ? -1 : 1;
+        //  }
+        //  if (sortPrice) {
+        //      sortOptions.Price = sortPrice === 'dsc' ? -1 : 1;
+        //  }
 
         // console.log(sortingDates, sortingPrice)
+        // console.log(sortOptions);
 
         const results = await productsCollection
           .find(query)
-          .sort({ Price: sortingPrice, AddedDateTime: sortingDates }) // Sort by in ascending or descending order
+          // .sort({ sortOptions }) 
+          // .sort({ Price: sortingPrice, AddedDateTime: sortingDates }) 
           .skip(page * size)
           .limit(size)
           .toArray();

@@ -30,7 +30,7 @@ const DisplayProducts = () => {
     const [filterBrand, setFilterBrand] = useState('');
 
     // range of price
-    const [filterPrice, setFilterPrice] = useState(100);
+    const [filterPrice, setFilterPrice] = useState(50);
 
     // sort date by
     const [sortDate, setSortDate] = useState('asc');
@@ -42,7 +42,7 @@ const DisplayProducts = () => {
     const { data: productData = [], isLoading: productsLoading, refetch, isFetching } = useQuery({
         queryKey: ['productData'],
         queryFn: async () => {
-            // const { data } = await axiosCommon(`/products?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}`)
+            // const { data } = await axiosCommon(`/products?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
             const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
             return data
         }
@@ -95,7 +95,7 @@ const DisplayProducts = () => {
         setSortDate(sortD)
         setSortPrice(sortP)
         // console.log(category, name, date,brand, typeof(intRange),intRange);
-        console.log(sortD, sortP)
+        // console.log(sortD, sortP)
         refetch();
     }
 
@@ -105,7 +105,7 @@ const DisplayProducts = () => {
         setSearchTerm('');
         setFilterCategory('');
         setFilterBrand("");
-        setFilterPrice(100);
+        setFilterPrice(50);
         setSortPrice('asc');
         setSortDate('asc');
         setCurrentPage(1);
@@ -173,6 +173,7 @@ const DisplayProducts = () => {
                             <option value="dsc" >Descending Date</option>
                         </select>
                     </div>
+
                     {/* sort by price */}
                     <div>
                         <select {...register("sortP")}
@@ -217,17 +218,17 @@ const DisplayProducts = () => {
                             name="range"
                             type="range"
                             min={0}
-                            max={100} // Set a fixed max value
+                            max={50} // Set a fixed max value
                             {...register('range')}
                             className="range range-error"
-                            step="5"
+                            step="1"
                         />
                         <div className="flex w-full justify-between px-2 text-xs">
+                            <span>0</span>
                             <span>|</span>
                             <span>|</span>
                             <span>|</span>
-                            <span>|</span>
-                            <span>|</span>
+                            <span>50</span>
                         </div>
                     </div>
 
