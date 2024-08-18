@@ -247,7 +247,7 @@ async function run() {
     // API Connections for pagination
     // =================================
 
-    
+
     // Get tests lists count for pagination
     app.get('/pagination', async (req, res) => {
       const date = req.query?.date
@@ -256,7 +256,7 @@ async function run() {
       const brand = req.query?.brand
       const price = parseFloat(req.query?.price)
 
-      let query = {      }
+      let query = {}
 
       if (price) {
         query = { ...query, Price: { $lte: price } };
@@ -274,7 +274,7 @@ async function run() {
         query = { ...query, BrandName: { $eq: brand } };
       }
 
-      
+
       const counts = await productsCollection.countDocuments(query);
 
       // it provides a number with object form
@@ -288,6 +288,17 @@ async function run() {
     // Get products' data i
     app.get('/products', async (req, res) => {
       const results = await productsCollection.find().toArray();
+      res.send(results);
+    });
+
+    // Get a specific products' data by id
+    app.get('/productDetails/:id', async (req, res) => {
+      const id = req.params?.id;
+
+      const query = { _id: new ObjectId(id) }
+
+      const results = await usersCollection.find(query).toArray();
+      
       res.send(results);
     });
 
@@ -324,13 +335,13 @@ async function run() {
         }
 
         // Set sorting order
-         let sortOptions = {};
-         if (sortDate) {
-             sortOptions.AddedDateTime = sortDate === 'dsc' ? -1 : 1;
-         }
-         if (sortPrice) {
-             sortOptions.Price = sortPrice === 'dsc' ? -1 : 1;
-         }
+        let sortOptions = {};
+        if (sortDate) {
+          sortOptions.AddedDateTime = sortDate === 'dsc' ? -1 : 1;
+        }
+        if (sortPrice) {
+          sortOptions.Price = sortPrice === 'dsc' ? -1 : 1;
+        }
 
         const results = await productsCollection
           .find(query)
