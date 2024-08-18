@@ -38,13 +38,13 @@ const DisplayProducts = () => {
     // sort price by
     const [sortPrice, setSortPrice] = useState('asc');
 
-     // pagination 
-     const {
+    // pagination 
+    const {
         // data: pagination,
         isLoading: pageNumberLoading } = useQuery({
-            queryKey: ['pagination',filterDate,filterCategory,searchTerm,filterBrand,filterPrice,sortDate,sortPrice],
+            queryKey: ['pagination', filterDate, filterCategory, searchTerm, filterBrand, filterPrice],
             queryFn: async () => {
-                const { data } = await axiosCommon(`/pagination?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
+                const { data } = await axiosCommon(`/pagination?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}`)
                 await setDataCount(data.counts)
                 return data
             }
@@ -52,10 +52,9 @@ const DisplayProducts = () => {
 
     // for query product showing
     const { data: productData = [], isLoading: productsLoading, refetch, isFetching } = useQuery({
-        queryKey: ['productData', currentPage,itemsPerPage,filterDate,filterCategory,searchTerm,filterBrand,filterPrice,sortDate,sortPrice],
+        queryKey: ['productData', currentPage, itemsPerPage, filterDate, filterCategory, searchTerm, filterBrand, filterPrice, sortDate, sortPrice],
         queryFn: async () => {
             const { data } = await axiosCommon(`/queryProducts?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
-            // const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
             return data
         }
     })
@@ -81,7 +80,6 @@ const DisplayProducts = () => {
         // console.log(value);
         { value >= 24 && setItemsPerPage(Math.ceil(value / (Math.ceil(value / 6)))) }
     }
-    // console.log(typeof(currentPage) , currentPage)
 
     const {
         register,
@@ -92,7 +90,7 @@ const DisplayProducts = () => {
 
     const onSubmit = async (data) => {
 
-        const { name, date, category, brand, range, sortD, sortP } = data;
+        const { name, date, category, brand, range } = data;
 
         const formattedDate = moment(date).format('YYYY-MM-DDTHH:mm:ss[Z]');
         // console.log(formattedDate); // Output: 2024-08-15T20:24:22Z
@@ -104,11 +102,7 @@ const DisplayProducts = () => {
         setFilterCategory(category)
         setFilterBrand(brand)
         setFilterPrice(intRange)
-        setSortDate(sortD)
-        setSortPrice(sortP)
         setCurrentPage(1)
-        // console.log(category, name, date,brand, typeof(intRange),intRange);
-        console.log(sortD, sortP)
         refetch();
     }
 
@@ -238,6 +232,13 @@ const DisplayProducts = () => {
                     {/* sort by date */}
                     <div>
                         <select {...register("sortD")}
+                            onChange={e => {
+                                e.preventDefault();
+                                setSortDate(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            value={sortDate}
+                            name="sortD"
                             className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
                         >
                             <option value="asc" >Ascending Date</option>
@@ -248,6 +249,13 @@ const DisplayProducts = () => {
                     {/* sort by price */}
                     <div>
                         <select {...register("sortP")}
+                            onChange={e => {
+                                e.preventDefault();
+                                setSortPrice(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            value={sortPrice}
+                            name="sortP"
                             className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
                         >
                             <option value="asc" >Ascending Price</option>

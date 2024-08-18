@@ -255,8 +255,6 @@ async function run() {
       const search = req.query?.search
       const brand = req.query?.brand
       const price = parseFloat(req.query?.price)
-      const sortDate = req.query?.sortDate
-      const sortPrice = req.query?.sortPrice
 
       let query = {      }
 
@@ -281,33 +279,6 @@ async function run() {
 
       // it provides a number with object form
       res.send({ counts });
-    })
-
-    // Get tests lists count for pagination with page size and page count
-    app.get('/listPagination', async (req, res) => {
-      const size = parseInt(req.query.size)
-      const page = parseInt(req.query.page) - 1
-      const filter = req.query?.filter
-      const today = req.query?.today
-      const search = req.query?.search
-      // console.log(size,page);
-
-      let query = {
-        test_date: { $gte: today }, // Filter dates greater than or equal to today's date
-        test_name: { $regex: search, $options: 'i' },
-      }
-      if (filter) {
-        query = { ...query, test_date: { $gte: filter } }; // Filter dates greater than or equal to the filter date
-      }
-
-      const results = await testsCollection
-        .find(query)
-        .sort({ test_date: 1 }) // Sort by test_date in ascending order
-        .skip(page * size)
-        .limit(size)
-        .toArray();
-
-      res.send(results);
     })
 
     // =================================
@@ -352,29 +323,18 @@ async function run() {
           query = { ...query, BrandName: { $eq: brand } };
         }
 
-        // console.log(query);
-        // let sortingDates = 1;
-        // let sortingPrice = 1;
-        // if (sortDate === 'dsc') { sortingDates = -1 }
-
-        // if (sortPrice === 'dsc') {  sortingPrice = -1 }
-
         // Set sorting order
-        //  let sortOptions = {};
-        //  if (sortDate) {
-        //      sortOptions.AddedDateTime = sortDate === 'dsc' ? -1 : 1;
-        //  }
-        //  if (sortPrice) {
-        //      sortOptions.Price = sortPrice === 'dsc' ? -1 : 1;
-        //  }
-
-        // console.log(sortingDates, sortingPrice)
-        // console.log(sortOptions);
+         let sortOptions = {};
+         if (sortDate) {
+             sortOptions.AddedDateTime = sortDate === 'dsc' ? -1 : 1;
+         }
+         if (sortPrice) {
+             sortOptions.Price = sortPrice === 'dsc' ? -1 : 1;
+         }
 
         const results = await productsCollection
           .find(query)
-          // .sort({ sortOptions }) 
-          // .sort({ Price: sortingPrice, AddedDateTime: sortingDates }) 
+          .sort(sortOptions)
           .skip(page * size)
           .limit(size)
           .toArray();
