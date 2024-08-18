@@ -247,44 +247,7 @@ async function run() {
     // API Connections for tests
     // =================================
 
-    // Get all tests' data 
-    app.get('/tests', async (req, res) => {
-      const results = await testsCollection.find().toArray();
-      res.send(results);
-    });
-
-    // delete tests' data
-    app.delete('/deleteTests/:id', verifyToken, verifyAdmin, async (req, res) => {
-      const id = req.params?.id;
-      const result = await testsCollection.deleteOne({ _id: new ObjectId(id) });
-      res.send(result);
-    });
-
-    // Update tests' data by id
-    app.put('/updateTests/:id', async (req, res) => {
-      // console.log(req.params?.email);
-      const id = req.params?.id;
-      const request = req.body;
-      const query = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const data = {
-        $set: {
-          ...request,
-        }
-      }
-      const result = await testsCollection.updateOne(query, data, options);
-      res.send(result);
-    });
-
-    // Post a test
-    app.post('/addTests', verifyToken, verifyAdmin, async (req, res) => {
-      const newTest = req.body;
-      // console.log(newUser);
-      const result = await testsCollection.insertOne(newTest);
-      // console.log(result);
-      res.send(result);
-    })
-
+    
     // Get tests lists count for pagination
     app.get('/testsListsCount', async (req, res) => {
       const filter = req.query?.filter
@@ -364,7 +327,7 @@ async function run() {
           query = { ...query, ProductName: { $regex: search, $options: 'i' } };
         }
         if (date !== 'Invalid date') {
-          query = { ...query, AddedDateTime: { $gte: date } }; 
+          query = { ...query, AddedDateTime: { $gte: date } };
         }
         if (category) {
           query = { ...query, Category: { $eq: category } };
@@ -380,7 +343,7 @@ async function run() {
 
         // if (sortPrice === 'dsc') {  sortingPrice = -1 }
 
-         // Set sorting order
+        // Set sorting order
         //  let sortOptions = {};
         //  if (sortDate) {
         //      sortOptions.AddedDateTime = sortDate === 'dsc' ? -1 : 1;
@@ -408,75 +371,6 @@ async function run() {
         // Send an error response to the client
         res.status(500).json({ message: 'Internal server error' });
       }
-    });
-
-    // Get banners' data is active true
-    app.get('/banners', async (req, res) => {
-      const results = await bannersCollection.find({ isActive: true }).toArray();
-      res.send(results);
-    });
-
-    // Get banners' data is active false
-    app.get('/bannersSlider', async (req, res) => {
-      const results = await bannersCollection.find({ isActive: false }).toArray();
-      res.send(results);
-    });
-
-    // get data for banners by id
-    app.get('/banners/:id', verifyToken, async (req, res) => {
-      const id = req.params?.id;
-      const results = await bannersCollection.find({ _id: new ObjectId(id) }).toArray();
-      res.send(results);
-    })
-
-    // Post banners data
-    app.post('/banners', verifyToken, verifyAdmin, async (req, res) => {
-      const banners = req.body;
-      const result = await bannersCollection.insertOne(banners);
-      res.send(result);
-    })
-
-    // Patch a banners' data by id
-    app.patch('/updateBanner/:id', verifyToken, verifyAdmin, async (req, res) => {
-      try {
-        const id = req.params?.id; // Extract the user id from the request parameters
-        const updateBody = req.body; // Extract the new status from the request body
-        // console.log('updateBody -->',updateBody);
-
-        // Check if the new status is true
-        if (updateBody.status) {
-          // Set isActive to false for all other banners
-          await bannersCollection.updateMany(
-            { _id: { $ne: new ObjectId(id) } },
-            { $set: { isActive: false } }
-          );
-        }
-
-        // Update the specific banner's status
-        const query = { _id: new ObjectId(id) }
-        const updateDoc = {
-          $set: {
-            isActive: updateBody.status
-          },
-        }
-        const results = await bannersCollection.updateOne(query, updateDoc);
-
-        // console.log(results)
-        res.send(results);
-      }
-      catch (err) {
-        // If an error occurs during execution, catch it here
-        console.error('Error updating user status:', err);
-        // Send an error response to the client
-        res.status(500).json({ message: 'Internal server error' });
-      }
-    });
-
-    // delete banner data
-    app.delete('/deleteBanner/:id', verifyToken, verifyAdmin, async (req, res) => {
-      const id = req.params?.id;
-      const result = await bannersCollection.deleteOne({ _id: new ObjectId(id) });
-      res.send(result);
     });
 
     // =================================================================

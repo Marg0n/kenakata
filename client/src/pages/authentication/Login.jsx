@@ -9,9 +9,9 @@ import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import bgImg from '../../assets/images/login.png';
 import useAuth from "../../hooks/useAuth";
-import Loader from './../../components/Loader';
-import logo from '/wordInsight_logo.jpeg';
+import logo from '/kenakata.gif';
 import axios from "axios";
+import Loader from "../../components/shared/Loader";
 
 
 const Login = () => {
@@ -128,13 +128,13 @@ const Login = () => {
         ></div>
 
         <div className='w-full px-6 py-8 md:px-8 lg:w-1/2'>
-          <div className='flex justify-center mx-auto'>
+          <Link to='/' className='flex justify-center mx-auto'>
             <img
               className='w-auto md:h-12  h-8 rounded'
               src={logo}
               alt=''
             />
-          </div>
+          </Link>
 
           <p className='mt-3 text-xl text-center text-gray-600 '>
             Welcome back!
