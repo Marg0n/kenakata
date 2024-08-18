@@ -13,7 +13,7 @@ const DisplayProducts = () => {
     const axiosCommon = useAxiosCommon();
 
     // Pagination count variables
-    const [itemsPerPage, setItemsPerPage] = useState(3); // default showing items per page
+    const [itemsPerPage, setItemsPerPage] = useState(12); // default showing items per page
     const [currentPage, setCurrentPage] = useState(1); // default showing page is 1
     const [dataCount, setDataCount] = useState();
 
@@ -38,12 +38,24 @@ const DisplayProducts = () => {
     // sort price by
     const [sortPrice, setSortPrice] = useState('asc');
 
+     // pagination 
+     const {
+        // data: pagination,
+        isLoading: pageNumberLoading } = useQuery({
+            queryKey: ['pagination',filterDate,filterCategory,searchTerm,filterBrand,filterPrice,sortDate,sortPrice],
+            queryFn: async () => {
+                const { data } = await axiosCommon(`/pagination?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
+                await setDataCount(data.counts)
+                return data
+            }
+        })
+
     // for query product showing
     const { data: productData = [], isLoading: productsLoading, refetch, isFetching } = useQuery({
-        queryKey: ['productData'],
+        queryKey: ['productData', currentPage,itemsPerPage,filterDate,filterCategory,searchTerm,filterBrand,filterPrice,sortDate,sortPrice],
         queryFn: async () => {
-            // const { data } = await axiosCommon(`/products?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
-            const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
+            const { data } = await axiosCommon(`/queryProducts?page=${currentPage}&size=${itemsPerPage}&date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
+            // const { data } = await axiosCommon(`/queryProducts?date=${filterDate}&category=${filterCategory}&search=${searchTerm}&brand=${filterBrand}&price=${filterPrice}&sortDate=${sortDate}&sortPrice=${sortPrice}`)
             return data
         }
     })
@@ -67,7 +79,7 @@ const DisplayProducts = () => {
     const handlePaginationButton = value => {
         setCurrentPage(value);
         // console.log(value);
-        // { value === 24 && setItemsPerPage(Math.ceil(value / (Math.ceil(value / 6)))) }
+        { value >= 24 && setItemsPerPage(Math.ceil(value / (Math.ceil(value / 6)))) }
     }
     // console.log(typeof(currentPage) , currentPage)
 
@@ -94,8 +106,9 @@ const DisplayProducts = () => {
         setFilterPrice(intRange)
         setSortDate(sortD)
         setSortPrice(sortP)
+        setCurrentPage(1)
         // console.log(category, name, date,brand, typeof(intRange),intRange);
-        // console.log(sortD, sortP)
+        console.log(sortD, sortP)
         refetch();
     }
 
@@ -119,7 +132,7 @@ const DisplayProducts = () => {
     refetch();
 
     // loader
-    if (productsLoading || isFetching || queryFetch) {
+    if (productsLoading || isFetching || queryFetch || pageNumberLoading) {
         <Loader />
     }
 
@@ -131,7 +144,7 @@ const DisplayProducts = () => {
             </Helmet>
 
             <h3 className="font-bold font-sans text-2xl text-center underline underline-offset-4">
-                Item Found : {productData.length}
+                Items Found This Page : {productData.length} out of 12
             </h3>
 
             {/* filter */}
@@ -162,26 +175,6 @@ const DisplayProducts = () => {
                                 {...register("name")}
                             />
                         </label>
-                    </div>
-
-                    {/* sort by date */}
-                    <div>
-                        <select {...register("sortD")}
-                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
-                        >
-                            <option value="asc" >Ascending Date</option>
-                            <option value="dsc" >Descending Date</option>
-                        </select>
-                    </div>
-
-                    {/* sort by price */}
-                    <div>
-                        <select {...register("sortP")}
-                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
-                        >
-                            <option value="asc" >Ascending Price</option>
-                            <option value="dsc" >Descending Price</option>
-                        </select>
                     </div>
 
                     {/* category */}
@@ -240,10 +233,33 @@ const DisplayProducts = () => {
                     </button>
                 </form>
 
-                {/* reset */}
-                <button
-                    onClick={handleReset}
-                    className='btn btn-outline hover:btn-accent'>Reset</button>
+                <div className="flex flex-col gap-2">
+
+                    {/* sort by date */}
+                    <div>
+                        <select {...register("sortD")}
+                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                        >
+                            <option value="asc" >Ascending Date</option>
+                            <option value="dsc" >Descending Date</option>
+                        </select>
+                    </div>
+
+                    {/* sort by price */}
+                    <div>
+                        <select {...register("sortP")}
+                            className='block p-4 w-auto px-4 py-2  border rounded-lg h-12 focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300'
+                        >
+                            <option value="asc" >Ascending Price</option>
+                            <option value="dsc" >Descending Price</option>
+                        </select>
+                    </div>
+
+                    {/* reset */}
+                    <button
+                        onClick={handleReset}
+                        className='btn btn-outline hover:btn-accent'>Reset</button>
+                </div>
             </div>
 
             {/* cards */}

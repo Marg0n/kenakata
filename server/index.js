@@ -244,29 +244,47 @@ async function run() {
     });
 
     // =================================
-    // API Connections for tests
+    // API Connections for pagination
     // =================================
 
     
     // Get tests lists count for pagination
-    app.get('/testsListsCount', async (req, res) => {
-      const filter = req.query?.filter
+    app.get('/pagination', async (req, res) => {
+      const date = req.query?.date
+      const category = req.query?.category
       const search = req.query?.search
+      const brand = req.query?.brand
+      const price = parseFloat(req.query?.price)
+      const sortDate = req.query?.sortDate
+      const sortPrice = req.query?.sortPrice
 
-      let query = {
-        test_name: { $regex: search, $options: 'i' },
+      let query = {      }
+
+      if (price) {
+        query = { ...query, Price: { $lte: price } };
       }
-      if (filter) {
-        query.test_date = { $gte: filter }; // Filter dates greater than or equal to the filter date
+      if (search) {
+        query = { ...query, ProductName: { $regex: search, $options: 'i' } };
       }
-      const counts = await testsCollection.countDocuments(query);
+      if (date !== 'Invalid date') {
+        query = { ...query, AddedDateTime: { $gte: date } };
+      }
+      if (category) {
+        query = { ...query, Category: { $eq: category } };
+      }
+      if (brand) {
+        query = { ...query, BrandName: { $eq: brand } };
+      }
+
+      
+      const counts = await productsCollection.countDocuments(query);
 
       // it provides a number with object form
       res.send({ counts });
     })
 
     // Get tests lists count for pagination with page size and page count
-    app.get('/testsListPagination', async (req, res) => {
+    app.get('/listPagination', async (req, res) => {
       const size = parseInt(req.query.size)
       const page = parseInt(req.query.page) - 1
       const filter = req.query?.filter
@@ -291,8 +309,6 @@ async function run() {
 
       res.send(results);
     })
-
-
 
     // =================================
     // API Connections for products
