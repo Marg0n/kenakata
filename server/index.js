@@ -18,7 +18,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'http://localhost:5174',
-    // "clcient",
+    "https://smd-kenakata.netlify.app",
     // server-side
   ],
   credentials: true,
@@ -297,7 +297,7 @@ async function run() {
 
       const query = { _id: new ObjectId(id) }
 
-      const results = await usersCollection.find(query).toArray();
+      const results = await productsCollection.find(query).toArray();
       
       res.send(results);
     });

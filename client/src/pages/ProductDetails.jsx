@@ -1,27 +1,30 @@
-import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import useAuth from '../../hooks/useAuth';
-import { Tooltip } from "react-tooltip";
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import Loader from '../shared/Loader';
+import { useParams } from 'react-router-dom';
+import Loader from '../components/shared/Loader';
+import moment from 'moment';
+import useAxiosCommon from '../hooks/useAxiosCommon';
+import { useQuery } from '@tanstack/react-query';
 
 const ProductDetails = () => {
 
     const { id } = useParams();
-    const { user } = useAuth();
-    const [getComments, setGetComments] = useState([]);
-    const [productDetail, setProductDetail] = useState({});
 
-    // get all blogs data by id
-    useEffect(() => {
-        axios(`${import.meta.env.VITE_SERVER}/productDetails/${id}`,{ withCredentials: true })
-            .then(data => {
-                setProductDetail(data.data);
-                // console.log(data);
-            })
-    }, [id]);
+    const axiosCommon = useAxiosCommon();
 
-    const { _id, ProductName, BrandName, ProductImage, Description, Price, Category, Ratings, AddedDateTime } = productDetail;
+    // for category, brand list
+    const { data: productDetails = [], isFetching, isLoading } = useQuery({
+        queryKey: ['productDetails',id],
+        queryFn: async () => {
+            const { data } = await axiosCommon(`/productDetails/${id}`)
+            return data
+        }
+    })
+
+
+    const { _id, ProductName, BrandName, ProductImage, Description, Price, Category, Ratings, AddedDateTime } = productDetails;
+
+    const formattedDate = moment(AddedDateTime).format('MMMM D, YYYY h:mm A'); 
 
     // loader
     const [loading, setLoading] = useState(true);
@@ -34,7 +37,7 @@ const ProductDetails = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    if (loading) {
+    if (loading || isLoading || isFetching) {
         return <Loader />
     }
 
@@ -55,6 +58,9 @@ const ProductDetails = () => {
                     <h2 className="card-title text-xl font-semibold text-start font-serif">
                         {ProductName}
                     </h2>
+                    <h3 className="card-title text-lg font-semibold text-start font-serif">
+                        {BrandName}
+                    </h3>
                     <p className="text-base">Category :{' '}
                         <span className='font-semibold badge badge-primary'>
                             #{Category}
@@ -67,28 +73,18 @@ const ProductDetails = () => {
 
                     <div className="divider my-0 "></div>
 
-                    <p>{long_description}</p>
+                    <p>Added Date: {formattedDate}</p>
+
+                    <div className="divider my-0 "></div>
+
+                    <p>Rating: {Ratings} / 5</p>
 
                     <div className="divider my-0 "></div>
 
                     <p className="text-base text-right">Price : <span className='font-semibold'>
                         {Price}
-                        {/* long_description display {long_description.length} */}
                     </span></p>
-                    {
-                        postEmail === loadUserData[0]?.email ? <span className="text-right absolute right-8 top-14">
-                            <Link
-                                to={`/myBlogs/edit/${id}`}
-                                data-tooltip-id="update-tooltip"
-                                data-tooltip-content="Edit"
-                                className='btn btn-neutral hover:btn-info btn-xl animate__animated  animate__jello animate__infinite'>📝</Link>
-                            <Tooltip id="update-tooltip" />
-                        </span>
-                            : ''
-                    }
-
-
-
+                    
                 </div>
             </div>
 
